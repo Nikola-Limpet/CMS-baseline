@@ -6,4 +6,5 @@ export {
   getAllBlogTags,
   getAllBlogPostsForAdmin,
 } from './blogs';
+export type { BlogPostWithAuthor } from './blogs';
 export { getUserById, getAllUsersForAdmin } from './users';

@@ -1,18 +1,40 @@
 import { cache } from 'react';
 import { db } from '@/db';
-import { blogPosts, blogCategories, blogTags } from '@/db/schema';
+import { blogPosts, blogCategories, blogTags, user } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import type { BlogPost, BlogCategory, BlogTag } from '@/db/schema';
 
+export type BlogPostWithAuthor = BlogPost & {
+  authorName: string | null;
+  authorImage: string | null;
+};
+
 export const getLatestPublishedBlogs = cache(
-  async (limit = 3): Promise<BlogPost[]> => {
+  async (limit = 3): Promise<BlogPostWithAuthor[]> => {
     try {
-      return await db
-        .select()
+      const rows = await db
+        .select({
+          id: blogPosts.id,
+          title: blogPosts.title,
+          slug: blogPosts.slug,
+          content: blogPosts.content,
+          excerpt: blogPosts.excerpt,
+          coverImage: blogPosts.coverImage,
+          published: blogPosts.published,
+          publishedAt: blogPosts.publishedAt,
+          scheduledPublishAt: blogPosts.scheduledPublishAt,
+          userId: blogPosts.userId,
+          createdAt: blogPosts.createdAt,
+          updatedAt: blogPosts.updatedAt,
+          authorName: user.name,
+          authorImage: user.image,
+        })
         .from(blogPosts)
+        .leftJoin(user, eq(blogPosts.userId, user.id))
         .where(eq(blogPosts.published, true))
         .orderBy(desc(blogPosts.publishedAt))
         .limit(limit);
+      return rows;
     } catch (error) {
       console.error('[DAL] Error fetching latest published blogs:', error);
       return [];
@@ -21,11 +43,27 @@ export const getLatestPublishedBlogs = cache(
 );
 
 export const getFeaturedBlogPost = cache(
-  async (): Promise<BlogPost | null> => {
+  async (): Promise<BlogPostWithAuthor | null> => {
     try {
       const [post] = await db
-        .select()
+        .select({
+          id: blogPosts.id,
+          title: blogPosts.title,
+          slug: blogPosts.slug,
+          content: blogPosts.content,
+          excerpt: blogPosts.excerpt,
+          coverImage: blogPosts.coverImage,
+          published: blogPosts.published,
+          publishedAt: blogPosts.publishedAt,
+          scheduledPublishAt: blogPosts.scheduledPublishAt,
+          userId: blogPosts.userId,
+          createdAt: blogPosts.createdAt,
+          updatedAt: blogPosts.updatedAt,
+          authorName: user.name,
+          authorImage: user.image,
+        })
         .from(blogPosts)
+        .leftJoin(user, eq(blogPosts.userId, user.id))
         .where(eq(blogPosts.published, true))
         .orderBy(desc(blogPosts.publishedAt))
         .limit(1);
@@ -38,14 +76,31 @@ export const getFeaturedBlogPost = cache(
 );
 
 export const getPublishedBlogs = cache(
-  async (limit = 20): Promise<BlogPost[]> => {
+  async (limit = 20): Promise<BlogPostWithAuthor[]> => {
     try {
-      return await db
-        .select()
+      const rows = await db
+        .select({
+          id: blogPosts.id,
+          title: blogPosts.title,
+          slug: blogPosts.slug,
+          content: blogPosts.content,
+          excerpt: blogPosts.excerpt,
+          coverImage: blogPosts.coverImage,
+          published: blogPosts.published,
+          publishedAt: blogPosts.publishedAt,
+          scheduledPublishAt: blogPosts.scheduledPublishAt,
+          userId: blogPosts.userId,
+          createdAt: blogPosts.createdAt,
+          updatedAt: blogPosts.updatedAt,
+          authorName: user.name,
+          authorImage: user.image,
+        })
         .from(blogPosts)
+        .leftJoin(user, eq(blogPosts.userId, user.id))
         .where(eq(blogPosts.published, true))
         .orderBy(desc(blogPosts.publishedAt))
         .limit(limit);
+      return rows;
     } catch (error) {
       console.error('[DAL] Error fetching published blogs:', error);
       return [];

@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 import { auth } from '@/lib/auth';
 import { z } from 'zod';
 import { db } from '@/db';
-import { blogPosts, blogCategories, blogTags, blogPostCategories, blogPostTags } from '@/db/schema';
+import { blogPosts, blogCategories, blogTags, blogPostCategories, blogPostTags, user } from '@/db/schema';
 import { eq, desc, like, and, inArray } from 'drizzle-orm';
 import { generateSlug } from '@/lib/utils';
 import { apiSuccess, apiError, handleApiError, parseJsonBody } from '@/lib/api/response';
@@ -190,8 +190,23 @@ export async function GET(request: NextRequest) {
       conditions.push(inArray(blogPosts.id, postIds));
     }
 
-    // Execute main query
-    const query = db.select().from(blogPosts).$dynamic();
+    // Execute main query with author join
+    const query = db.select({
+      id: blogPosts.id,
+      title: blogPosts.title,
+      slug: blogPosts.slug,
+      content: blogPosts.content,
+      excerpt: blogPosts.excerpt,
+      coverImage: blogPosts.coverImage,
+      published: blogPosts.published,
+      publishedAt: blogPosts.publishedAt,
+      scheduledPublishAt: blogPosts.scheduledPublishAt,
+      userId: blogPosts.userId,
+      createdAt: blogPosts.createdAt,
+      updatedAt: blogPosts.updatedAt,
+      authorName: user.name,
+      authorImage: user.image,
+    }).from(blogPosts).leftJoin(user, eq(blogPosts.userId, user.id)).$dynamic();
 
     if (conditions.length > 0) {
       query.where(conditions.length === 1 ? conditions[0] : and(...conditions));

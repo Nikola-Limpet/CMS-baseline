@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import ImprovedBlogPostForm from '@/components/dashboard/blogs/ImprovedBlogPostForm';
+import BlogPostForm from '@/components/dashboard/blogs/BlogPostForm';
 import { db } from '@/db';
 import {
   blogPosts,
@@ -121,6 +121,5 @@ export default async function EditBlogPostPage({
     notFound(); // Redirect to 404 page
   }
 
-  console.log('✅ Rendering ImprovedBlogPostForm with post data');
-  return <ImprovedBlogPostForm postToEdit={post} />;
+  return <BlogPostForm postToEdit={post} />;
 }

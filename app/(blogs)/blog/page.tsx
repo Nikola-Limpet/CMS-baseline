@@ -12,6 +12,7 @@ import {
   getAllBlogTags,
   getPublishedBlogs,
 } from '@/lib/dal';
+import type { BlogPostWithAuthor } from '@/lib/dal';
 
 function calculateReadingTime(content: string): string {
   const wordsPerMinute = 200;
@@ -40,14 +41,14 @@ export default async function BlogPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Clean Header Section */}
-      <section className="pt-24 pb-8 bg-white border-b border-gray-100">
+      <section className="pt-24 pb-8 border-b border-border">
         <div className="container mx-auto px-4">
           <div className="max-w-7xl mx-auto space-y-4">
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900">
-              Blog & Resources
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+              Blog
             </h1>
-            <p className="text-lg text-gray-500 leading-relaxed max-w-xl">
-              Discover insights, learning strategies, and educational resources to accelerate your academic journey.
+            <p className="text-lg text-muted-foreground leading-relaxed max-w-xl">
+              Thoughts on web development, design, and building in the open.
             </p>
           </div>
         </div>
@@ -91,12 +92,22 @@ export default async function BlogPage() {
 
                 <div className={`${featuredPost.coverImage ? 'lg:w-1/2' : 'w-full'} p-8 md:p-12`}>
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">
-                      M
-                    </div>
+                    {featuredPost.authorImage ? (
+                      <Image
+                        src={featuredPost.authorImage}
+                        alt={featuredPost.authorName || 'Author'}
+                        width={40}
+                        height={40}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">
+                        {featuredPost.authorName?.[0]?.toUpperCase() || 'A'}
+                      </div>
+                    )}
                     <div>
-                      <div className="font-semibold text-foreground text-sm">MOVE Team</div>
-                      <div className="text-muted-foreground text-xs">Expert educators and content creators</div>
+                      <div className="font-semibold text-foreground text-sm">{featuredPost.authorName || 'Unknown'}</div>
+                      <div className="text-muted-foreground text-xs">{formatFullDate(featuredPost.publishedAt)} · {calculateReadingTime(featuredPost.content)}</div>
                     </div>
                   </div>
 

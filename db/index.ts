@@ -16,7 +16,7 @@ const globalForDb = globalThis as unknown as {
 };
 
 const client = postgres(connectionString, {
-  ssl: 'require',
+  ssl: process.env.DATABASE_SSL === 'true' ? 'require' : false,
   max: 10,
   idle_timeout: 20,
   connect_timeout: 10,
