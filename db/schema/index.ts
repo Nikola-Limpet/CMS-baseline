@@ -10,3 +10,12 @@ export * from './auth';
 
 // Blog (no external table dependencies)
 export * from './blog';
+
+// Events (no external table dependencies)
+export * from './events';
+
+// Testimonials
+export * from './testimonials';
+
+// Media Assets
+export * from './media';

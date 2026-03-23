@@ -8,19 +8,19 @@
 @layer base {
   :root {
     --background: #ffffff;
-    --foreground: #0a0a0a;
+    --foreground: #1B2A4A;
     --card: #ffffff;
-    --card-foreground: #0a0a0a;
+    --card-foreground: #1B2A4A;
     --popover: #ffffff;
-    --popover-foreground: #0a0a0a;
-    --primary: #1e40af;
+    --popover-foreground: #1B2A4A;
+    --primary: #1B2A4A;
     --primary-foreground: #ffffff;
-    --secondary: #0891b2;
+    --secondary: #2A3F6B;
     --secondary-foreground: #ffffff;
-    --muted: #f1f5f9;
-    --muted-foreground: #64748b;
-    --accent: #f1f5f9;
-    --accent-foreground: #0a0a0a;
+    --muted: #F8F8F6;
+    --muted-foreground: #6B7280;
+    --accent: #F8F8F6;
+    --accent-foreground: #1B2A4A;
     --success: #16a34a;
     --success-foreground: #ffffff;
     --warning: #eab308;
@@ -29,9 +29,9 @@
     --info-foreground: #ffffff;
     --destructive: #dc2626;
     --destructive-foreground: #fef2f2;
-    --border: #e2e8f0;
-    --input: #e2e8f0;
-    --ring: #1e40af;
+    --border: #E5E7EB;
+    --input: #E5E7EB;
+    --ring: #1B2A4A;
     --chart-1: 191 91% 36%;
     --chart-2: 38 92% 50%;
     --chart-3: 48 96% 53%;
@@ -45,11 +45,11 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-    --font-heading: var(--font-geist), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    --font-body: var(--font-geist), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-heading: var(--font-dm-serif), Georgia, serif;
+    --font-body: var(--font-dm-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     --font-monospace: var(--font-geist-mono), "Courier New", monospace;
-    --font-sans: var(--font-geist), ui-sans-serif, sans-serif;
-    --font-serif: ui-serif, serif;
+    --font-sans: var(--font-dm-sans), ui-sans-serif, sans-serif;
+    --font-serif: var(--font-dm-serif), Georgia, serif;
     --font-mono: var(--font-geist-mono), ui-monospace, monospace;
     --radius: 0.5rem;
     --shadow-2xs: 0px 1px 4px 0px hsl(0 0% 0% / 0.03);

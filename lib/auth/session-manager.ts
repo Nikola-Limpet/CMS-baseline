@@ -11,10 +11,10 @@ export interface AnonymousSession {
 export const clientSessionUtils = {
   getSessionFromLocalStorage(): AnonymousSession | null {
     if (typeof window === 'undefined') return null;
-    
+
     const stored = localStorage.getItem('practice_session');
     if (!stored) return null;
-    
+
     try {
       return JSON.parse(stored) as AnonymousSession;
     } catch {
@@ -31,7 +31,7 @@ export const clientSessionUtils = {
     if (typeof window === 'undefined') return;
     localStorage.removeItem('practice_session');
   },
-  
+
   createNewSession(): AnonymousSession {
     return {
       sessionId: uuidv4(),
@@ -39,7 +39,7 @@ export const clientSessionUtils = {
       lastActiveAt: new Date().toISOString()
     };
   },
-  
+
   getOrCreateSession(): AnonymousSession {
     let session = this.getSessionFromLocalStorage();
     if (!session) {

@@ -9,8 +9,14 @@ export type BlogPostData = {
   cover_image?: string;
   published: boolean;
   user_id: string;
-  categories?: string[]; // Array of category IDs
-  tags?: string[]; // Array of tag IDs
+  categories?: string[];
+  tags?: string[];
+  // SEO fields
+  meta_title?: string;
+  meta_description?: string;
+  og_image?: string;
+  canonical_url?: string;
+  no_index?: boolean;
 };
 
 // Blog API service

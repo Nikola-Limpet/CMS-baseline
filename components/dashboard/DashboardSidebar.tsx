@@ -3,11 +3,14 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthUser } from '@/hooks/use-auth-user';
-import { authClient } from '@/lib/auth-client';
+import { authClient } from '@/lib/auth/client';
 import { useEffect, useState } from 'react';
 import {
   LayoutDashboard,
   Newspaper,
+  CalendarDays,
+  MessageSquareQuote,
+  ImageIcon,
   Users as UsersIcon,
   LogOut,
   User,
@@ -35,6 +38,27 @@ const adminNavItems = [
     icon: Newspaper,
     group: 'content',
     description: 'Content Management'
+  },
+  {
+    href: '/dashboard/events',
+    label: 'Events',
+    icon: CalendarDays,
+    group: 'content',
+    description: 'Event Management'
+  },
+  {
+    href: '/dashboard/testimonials',
+    label: 'Testimonials',
+    icon: MessageSquareQuote,
+    group: 'content',
+    description: 'Testimonial Management'
+  },
+  {
+    href: '/dashboard/media',
+    label: 'Media',
+    icon: ImageIcon,
+    group: 'content',
+    description: 'Media Library'
   },
   {
     href: '/dashboard/users',

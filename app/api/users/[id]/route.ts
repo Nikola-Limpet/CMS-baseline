@@ -1,9 +1,8 @@
 import { NextRequest } from 'next/server';
-import { headers } from 'next/headers';
-import { auth } from '@/lib/auth';
 import { db } from '@/db';
 import { user as userTable, User } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import { requireAuth, requireAdmin, isAuthError } from '@/lib/auth/require';
 import { apiSuccess, apiError, handleApiError, parseJsonBody } from '@/lib/api/response';
 
 
@@ -14,30 +13,16 @@ export async function GET(
 ) {
   const { id } = await params;
   try {
-    // Check authentication
-    const session = await auth.api.getSession({ headers: await headers() });
-    const userId = session?.user?.id ?? null;
-    if (!userId) {
-      return apiError('Unauthorized', 401);
-    }
+    const authResult = await requireAuth();
+    if (isAuthError(authResult)) return authResult;
+    const { userId, role } = authResult;
 
-    const currentUser = await db.query.user.findFirst({
-      where: eq(userTable.id, userId),
-    });
-
-    if (!currentUser) {
-      return apiError('User not found', 404);
-    }
-
-    if (currentUser.role !== 'admin' && userId !== id) {
+    if (role !== 'admin' && userId !== id) {
       return apiError('Forbidden: Admin access required', 403);
     }
 
-    const requestedUserId = id;
-
-    // Fetch user from our database
     const dbUser = await db.query.user.findFirst({
-      where: eq(userTable.id, requestedUserId),
+      where: eq(userTable.id, id),
     });
 
     if (!dbUser) {
@@ -57,29 +42,18 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    // Check authentication
-    const session = await auth.api.getSession({ headers: await headers() });
-    const userId = session?.user?.id ?? null;
-    if (!userId) {
-      return apiError('Unauthorized', 401);
-    }
+    const authResult = await requireAuth();
+    if (isAuthError(authResult)) return authResult;
+    const { userId, role } = authResult;
 
-    const currentUser = await db.query.user.findFirst({
-      where: eq(userTable.id, userId),
-    });
-
-    if (!currentUser) {
-      return apiError('User not found', 404);
+    if (role !== 'admin' && userId !== id) {
+      return apiError('Forbidden: Cannot update other users', 403);
     }
 
     const userData = await parseJsonBody<Record<string, any>>(request);
 
-    if (currentUser.role !== 'admin' && userId !== id) {
-      return apiError('Forbidden: Cannot update other users', 403);
-    }
-
     // If not admin, remove sensitive fields
-    if (currentUser.role !== 'admin') {
+    if (role !== 'admin') {
       delete userData.role;
       delete userData.active;
     }
@@ -93,7 +67,7 @@ export async function PATCH(
       return apiError('User not found', 404);
     }
 
-    const { role, ...otherUserDataFields } = userData;
+    const { role: newRole, ...otherUserDataFields } = userData;
     const updatePayload: Partial<User> = {
       ...otherUserDataFields,
       updatedAt: new Date(),
@@ -102,10 +76,10 @@ export async function PATCH(
     // If role was part of userData (meaning an admin is trying to set it,
     // as non-admin attempts to include 'role' would have been deleted from userData earlier)
     if (Object.prototype.hasOwnProperty.call(userData, 'role')) {
-      if (typeof role !== 'string' || !['admin', 'student'].includes(role)) {
+      if (typeof newRole !== 'string' || !['admin', 'student'].includes(newRole)) {
         return apiError('Invalid role. Must be "admin" or "student".', 400);
       }
-      updatePayload.role = role as 'admin' | 'student';
+      updatePayload.role = newRole as 'admin' | 'student';
     }
 
     await db.update(userTable)
@@ -133,20 +107,9 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    // Check authentication
-    const session = await auth.api.getSession({ headers: await headers() });
-    const userId = session?.user?.id ?? null;
-    if (!userId) {
-      return apiError('Unauthorized', 401);
-    }
-
-    const currentUser = await db.query.user.findFirst({
-      where: eq(userTable.id, userId),
-    });
-
-    if (!currentUser || currentUser.role !== 'admin') {
-      return apiError('Forbidden: Admin access required', 403);
-    }
+    const authResult = await requireAdmin();
+    if (isAuthError(authResult)) return authResult;
+    const { userId } = authResult;
 
     const existingUser = await db.query.user.findFirst({
       where: eq(userTable.id, id),

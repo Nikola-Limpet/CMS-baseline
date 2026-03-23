@@ -33,10 +33,18 @@ export async function generateMetadata({
     return { title: 'Blog Post Not Found' };
   }
 
+  const ogImage = post.ogImage || post.coverImage;
+
   return {
-    title: `${post.title} - Nikola Blog`,
-    description: post.excerpt || `Read ${post.title} on Nikola Blog`,
-    openGraph: post.coverImage ? { images: [{ url: post.coverImage }] } : undefined,
+    title: post.metaTitle || `${post.title} - Nikola Blog`,
+    description: post.metaDescription || post.excerpt || `Read ${post.title} on Nikola Blog`,
+    openGraph: {
+      title: post.metaTitle || post.title,
+      description: post.metaDescription || post.excerpt || undefined,
+      ...(ogImage ? { images: [{ url: ogImage }] } : {}),
+    },
+    ...(post.canonicalUrl ? { alternates: { canonical: post.canonicalUrl } } : {}),
+    ...(post.noIndex ? { robots: { index: false, follow: false } } : {}),
   };
 }
 
@@ -64,6 +72,11 @@ async function getBlogPostBySlug(slug: string) {
         authorName: user.name,
         authorImage: user.image,
         authorBio: user.bio,
+        metaTitle: blogPosts.metaTitle,
+        metaDescription: blogPosts.metaDescription,
+        ogImage: blogPosts.ogImage,
+        canonicalUrl: blogPosts.canonicalUrl,
+        noIndex: blogPosts.noIndex,
       })
       .from(blogPosts)
       .leftJoin(user, eq(blogPosts.userId, user.id))

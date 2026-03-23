@@ -3,62 +3,60 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { format } from 'date-fns';
-import { ArrowRight, FileText } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { ScrollReveal } from './scroll-reveal';
 import type { BlogPostWithAuthor } from '@/lib/dal';
 
-function calculateReadingTime(content: string | null): string {
-  if (!content) return '1 min';
-  const words = content.split(/\s+/).length;
-  return `${Math.max(1, Math.ceil(words / 200))} min read`;
-}
-
-export function BlogPostCard({ post, index }: { post: BlogPostWithAuthor; index: number }) {
+export function BlogPostCard({ post, index, showReadOverlay = false }: { post: BlogPostWithAuthor; index: number; showReadOverlay?: boolean }) {
   return (
     <ScrollReveal delay={Math.min(index * 0.1, 0.3)}>
-      <Link href={`/blog/${post.slug}`} className="group block no-underline">
+      <Link href={`/blog/${post.slug}`} className="group block no-underline bg-white rounded-xl overflow-hidden">
         {/* Thumbnail */}
-        {post.coverImage ? (
-          <div className="relative aspect-[3/2] rounded-xl overflow-hidden bg-muted">
-            <Image
-              src={post.coverImage}
-              alt={post.title || 'Blog post'}
-              fill
-              className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
-          </div>
-        ) : (
-          <div className="aspect-[3/2] rounded-xl bg-gradient-to-br from-muted to-accent flex items-center justify-center">
-            <FileText className="w-10 h-10 text-muted-foreground/30" />
-          </div>
-        )}
+        <div className="relative">
+          {post.coverImage ? (
+            <div className="relative aspect-[3/2] overflow-hidden">
+              <Image
+                src={post.coverImage}
+                alt={post.title || 'Blog post'}
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              />
+              {/* READ overlay for middle card */}
+              {showReadOverlay && (
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <span className="px-5 py-2 text-xs tracking-[0.2em] uppercase text-white font-medium border border-white/50 rounded-full">
+                    Read
+                  </span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="aspect-[3/2] bg-cream flex items-center justify-center">
+              <FileText className="w-10 h-10 text-navy/20" />
+            </div>
+          )}
+        </div>
 
         {/* Text Content */}
-        <div className="mt-4">
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            {post.authorName && <span>{post.authorName}</span>}
+        <div className="p-5">
+          <div className="flex items-center gap-3 text-xs">
             {post.publishedAt && (
-              <time dateTime={new Date(post.publishedAt).toISOString()}>
-                {format(new Date(post.publishedAt), 'MMM d, yyyy')}
+              <time dateTime={new Date(post.publishedAt).toISOString()} className="uppercase tracking-wider text-muted-foreground">
+                {format(new Date(post.publishedAt), 'dd MMMM yyyy')}
               </time>
             )}
-            <span>{calculateReadingTime(post.content)}</span>
+            {post.authorName && (
+              <>
+                <span className="flex-1" />
+                <span className="text-muted-foreground">{post.authorName}</span>
+              </>
+            )}
           </div>
 
-          <h3 className="text-lg font-semibold leading-snug mt-2 text-foreground group-hover:text-primary transition-colors duration-200 line-clamp-2">
+          <h3 className="text-base font-semibold leading-snug mt-3 text-navy group-hover:text-navy-light transition-colors duration-200 line-clamp-2">
             {post.title}
           </h3>
-
-          {post.excerpt && (
-            <p className="text-sm text-muted-foreground leading-relaxed mt-2 line-clamp-2">
-              {post.excerpt}
-            </p>
-          )}
-
-          <span className="inline-flex items-center gap-2 text-sm font-medium text-primary mt-3 group-hover:gap-3 transition-all duration-300">
-            Read more <ArrowRight className="w-3.5 h-3.5" />
-          </span>
         </div>
       </Link>
     </ScrollReveal>

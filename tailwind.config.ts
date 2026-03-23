@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
+import tailwindcssTypography from "@tailwindcss/typography";
 
 const config: Config = {
   darkMode: ["class"],
@@ -25,9 +26,9 @@ const config: Config = {
         "elevation-lg": "0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.05)",
       },
       fontFamily: {
-        sans: ["var(--font-geist)", "system-ui", "sans-serif"],
+        sans: ["var(--font-dm-sans)", "system-ui", "sans-serif"],
         mono: ["var(--font-geist-mono)", "ui-monospace", "Consolas", "monospace"],
-        serif: ["var(--font-instrument-serif)", "Georgia", "serif"],
+        serif: ["var(--font-dm-serif)", "Georgia", "serif"],
         khmer: ["var(--font-khmer)", "Kantumruy Pro", "sans-serif"],
         battambang: ["var(--font-battambang)", "Battambang", "serif"],
         moul: ["var(--font-moul)", "Moul", "serif"],
@@ -117,6 +118,12 @@ const config: Config = {
           800: "#061918",
           900: "#020604",
         },
+        navy: {
+          DEFAULT: "#1B2A4A",
+          light: "#2A3F6B",
+          dark: "#111D33",
+        },
+        cream: "#F8F8F6",
         "coral-red": {
           DEFAULT: "#FC4A4A",
           50: "#FFF0F0",
@@ -204,6 +211,7 @@ const config: Config = {
   },
   plugins: [
     tailwindcssAnimate,
+    tailwindcssTypography,
     function ({
       addUtilities,
     }: {

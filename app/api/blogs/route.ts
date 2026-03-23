@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { headers } from 'next/headers';
 import { auth } from '@/lib/auth';
+import { requireAuth, isAuthError } from '@/lib/auth/require';
 import { z } from 'zod';
 import { db } from '@/db';
 import { blogPosts, blogCategories, blogTags, blogPostCategories, blogPostTags, user } from '@/db/schema';
@@ -27,16 +28,18 @@ const blogPostSchema = z.object({
   slug: z.string().optional(),
   categories: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
+  // SEO fields
+  meta_title: z.string().max(255).optional().nullable().or(z.literal('').transform(() => null)),
+  meta_description: z.string().max(500).optional().nullable().or(z.literal('').transform(() => null)),
+  og_image: z.string().url().optional().nullable().or(z.literal('').transform(() => null)),
+  canonical_url: z.string().url().optional().nullable().or(z.literal('').transform(() => null)),
+  no_index: z.boolean().optional(),
 });
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
-    const userId = session?.user?.id ?? null;
-
-    if (!userId) {
-      return apiError('Unauthorized', 401);
-    }
+    const authResult = await requireAuth();
+    if (isAuthError(authResult)) return authResult;
 
     const body = await parseJsonBody<Record<string, any>>(request);
 
@@ -58,6 +61,11 @@ export async function POST(request: NextRequest) {
       published: validatedData.published,
       publishedAt,
       userId: validatedData.user_id,
+      metaTitle: validatedData.meta_title,
+      metaDescription: validatedData.meta_description,
+      ogImage: validatedData.og_image,
+      canonicalUrl: validatedData.canonical_url,
+      noIndex: validatedData.no_index ?? false,
     }).returning();
 
     const postId = result[0].id;

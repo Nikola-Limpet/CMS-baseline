@@ -1,19 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
-import { authClient } from '@/lib/auth-client';
+import { authClient } from '@/lib/auth/client';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  navigationMenuTriggerStyle,
-} from '@/components/ui/navigation-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -22,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Menu, X, ChevronRight, LogOut, User as UserIcon } from 'lucide-react';
+import { Menu, X, LogOut, User as UserIcon } from 'lucide-react';
 
 interface NavItem {
   name: string;
@@ -54,7 +46,6 @@ export function Navbar(): React.ReactElement | null {
     if (isMobileMenuOpen) setIsMobileMenuOpen(false);
   }, [pathname]);
 
-  // Hide navbar on dashboard routes
   if (pathname?.startsWith('/dashboard')) return null;
 
   const handleSignOut = async () => {
@@ -63,10 +54,11 @@ export function Navbar(): React.ReactElement | null {
     });
   };
 
-  const isHomepage = pathname === '/';
-
   const navItems: NavItem[] = [
+    { name: 'About', href: '/#about' },
+    { name: 'Programs', href: '/#programs' },
     { name: 'Blog', href: '/blog' },
+    { name: 'Events', href: '/events' },
   ];
 
   const userInitial = user?.name?.[0]?.toUpperCase() || 'U';
@@ -79,81 +71,62 @@ export function Navbar(): React.ReactElement | null {
         className={cn(
           'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
           scrolled
-            ? 'bg-background/95 backdrop-blur-xl border-b border-border shadow-sm'
-            : isHomepage
-              ? 'bg-transparent'
-              : 'bg-background/80 backdrop-blur-md border-b border-border/50'
+            ? 'bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-sm'
+            : 'bg-transparent'
         )}
       >
-        <div className="container mx-auto px-4 lg:px-6">
-          <div className={cn('flex items-center justify-between transition-all duration-300', scrolled ? 'h-14' : 'h-16')}>
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className={cn('flex items-center justify-between transition-all duration-300', scrolled ? 'h-16' : 'h-20')}>
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2.5 hover:opacity-90 transition-opacity">
-              <Image
-                src="/logo.png"
-                alt="CMS"
-                width={28}
-                height={28}
-                className="rounded-md"
-              />
-              <span className={cn('font-serif font-normal text-lg tracking-tight transition-colors', isHomepage && !scrolled ? 'text-white' : 'text-foreground')}>Nikola</span>
+            <Link href="/" className="flex items-center hover:opacity-90 transition-opacity">
+              <span className="text-xl tracking-tight text-navy font-serif">
+                Nikola
+              </span>
             </Link>
 
             {/* Desktop Navigation */}
-            <NavigationMenu className="hidden lg:flex">
-              <NavigationMenuList className="gap-1">
-                {navItems.map(item => (
-                  <NavigationMenuItem key={item.href}>
-                    <NavigationMenuLink asChild>
-                      <Link
-                        href={item.href}
-                        className={cn(
-                          navigationMenuTriggerStyle(),
-                          'rounded-lg font-medium px-3 py-2 text-sm',
-                          pathname === item.href
-                            ? 'text-primary font-semibold bg-primary/10'
-                            : isHomepage && !scrolled
-                              ? 'text-white/80 hover:text-white hover:bg-white/10'
-                              : 'text-foreground/80 hover:text-foreground hover:bg-accent'
-                        )}
-                      >
-                        {item.name}
-                      </Link>
-                    </NavigationMenuLink>
-                  </NavigationMenuItem>
-                ))}
-                {isSignedIn && (
-                  <NavigationMenuItem>
-                    <NavigationMenuLink asChild>
-                      <Link
-                        href="/dashboard"
-                        className={cn(
-                          navigationMenuTriggerStyle(),
-                          'rounded-lg font-medium px-3 py-2 text-sm',
-                          isHomepage && !scrolled
-                            ? 'text-white/80 hover:text-white hover:bg-white/10'
-                            : 'text-foreground/80 hover:text-foreground hover:bg-accent'
-                        )}
-                      >
-                        Dashboard
-                      </Link>
-                    </NavigationMenuLink>
-                  </NavigationMenuItem>
-                )}
-              </NavigationMenuList>
-            </NavigationMenu>
+            <nav className="hidden lg:flex items-center gap-8">
+              {navItems.map(item => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    'text-sm font-medium transition-colors duration-200',
+                    pathname === item.href
+                      ? 'text-navy'
+                      : 'text-navy/70 hover:text-navy'
+                  )}
+                >
+                  {item.name}
+                </Link>
+              ))}
+              {isSignedIn && (
+                <Link
+                  href="/dashboard"
+                  className="text-sm font-medium text-navy/70 hover:text-navy transition-colors duration-200"
+                >
+                  Dashboard
+                </Link>
+              )}
+              <Link
+                href="/#contact"
+                className="text-sm font-medium text-navy border-b border-navy pb-0.5 hover:opacity-80 transition-opacity"
+              >
+                Contact Us
+              </Link>
+            </nav>
 
             {/* Right - Auth + Mobile Toggle */}
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-3 shrink-0">
               {!isLoaded ? (
-                <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
+                <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
               ) : isSignedIn ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className="focus:outline-none">
-                      <Avatar className="w-8 h-8 ring-2 ring-primary/20 hover:ring-primary/40 transition-all cursor-pointer">
+                      <Avatar className="w-8 h-8 ring-2 ring-navy/20 hover:ring-navy/40 transition-all cursor-pointer">
                         <AvatarImage src={user?.image || undefined} alt={userName} />
-                        <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">{userInitial}</AvatarFallback>
+                        <AvatarFallback className="bg-navy/10 text-navy text-xs font-semibold">{userInitial}</AvatarFallback>
                       </Avatar>
                     </button>
                   </DropdownMenuTrigger>
@@ -175,12 +148,11 @@ export function Navbar(): React.ReactElement | null {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <div className="hidden sm:flex items-center gap-2">
+                <div className="hidden lg:flex items-center gap-2">
                   <Link href="/sign-in">
-                    <Button variant="ghost" size="sm" className={cn('rounded-lg font-medium text-sm px-3', isHomepage && !scrolled ? 'text-white/80 hover:text-white hover:bg-white/10' : 'text-foreground/80 hover:text-foreground')}>Sign In</Button>
-                  </Link>
-                  <Link href="/sign-up">
-                    <Button size="sm" className={cn('rounded-lg font-medium text-sm px-4', isHomepage && !scrolled ? 'bg-white text-[#0a0a0a] hover:bg-white/90' : 'bg-primary text-primary-foreground hover:bg-primary/90')}>Sign Up</Button>
+                    <Button variant="ghost" size="sm" className="text-sm font-medium text-navy/70 hover:text-navy hover:bg-navy/5">
+                      Sign In
+                    </Button>
                   </Link>
                 </div>
               )}
@@ -190,7 +162,7 @@ export function Navbar(): React.ReactElement | null {
                 variant="ghost"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
-                className="lg:hidden h-9 w-9 rounded-lg"
+                className="lg:hidden h-9 w-9 text-navy"
               >
                 {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </Button>
@@ -199,7 +171,7 @@ export function Navbar(): React.ReactElement | null {
         </div>
       </header>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu Overlay */}
       <div
         className={cn(
           'fixed inset-0 z-40 bg-black/20 backdrop-blur-sm transition-opacity duration-300',
@@ -207,25 +179,26 @@ export function Navbar(): React.ReactElement | null {
         )}
         onClick={() => setIsMobileMenuOpen(false)}
       />
+      {/* Mobile Menu Panel */}
       <div
         className={cn(
-          'fixed top-0 right-0 z-50 h-full bg-background shadow-xl lg:hidden w-full max-w-sm',
+          'fixed top-0 right-0 z-50 h-full bg-white shadow-xl lg:hidden w-full max-w-sm',
           'transform transition-transform duration-300 ease-in-out',
           isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         )}
       >
         <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-4 border-b">
-            <div className="flex items-center gap-2.5">
-              <Image src="/logo.png" alt="CMS" width={28} height={28} className="rounded-md" />
-              <span className="font-serif font-normal text-lg tracking-tight text-foreground">Nikola</span>
-            </div>
-            <Button size="icon" variant="ghost" onClick={() => setIsMobileMenuOpen(false)} className="h-9 w-9 rounded-lg">
+          <div className="flex items-center justify-between p-5 border-b border-gray-100">
+            <span className="text-xl tracking-tight text-navy">
+              <span className="font-serif font-normal">Edmun</span>
+              <span className="font-serif italic">High</span>
+            </span>
+            <Button size="icon" variant="ghost" onClick={() => setIsMobileMenuOpen(false)} className="h-9 w-9 text-navy">
               <X className="h-5 w-5" />
             </Button>
           </div>
 
-          <nav className="flex-1 overflow-y-auto p-4">
+          <nav className="flex-1 overflow-y-auto p-5">
             <div className="space-y-1">
               {navItems.map(item => (
                 <Link
@@ -233,23 +206,29 @@ export function Navbar(): React.ReactElement | null {
                   href={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={cn(
-                    'block rounded-xl px-3 py-3 text-sm font-medium transition-all flex items-center justify-between',
+                    'block px-3 py-3 text-sm font-medium transition-colors rounded-lg',
                     pathname === item.href
-                      ? 'bg-primary/10 text-primary font-semibold'
-                      : 'text-foreground hover:bg-accent'
+                      ? 'bg-navy/5 text-navy'
+                      : 'text-navy/70 hover:text-navy hover:bg-navy/5'
                   )}
                 >
-                  <span>{item.name}</span>
-                  {pathname === item.href && <ChevronRight className="h-4 w-4 text-primary" />}
+                  {item.name}
                 </Link>
               ))}
+              <Link
+                href="/#contact"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block px-3 py-3 text-sm font-medium text-navy/70 hover:text-navy hover:bg-navy/5 rounded-lg"
+              >
+                Contact Us
+              </Link>
               {isSignedIn && (
                 <>
-                  <div className="my-4 border-t" />
+                  <div className="my-4 border-t border-gray-100" />
                   <Link
                     href="/dashboard"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="block rounded-xl px-3 py-3 text-sm font-medium text-foreground hover:bg-accent"
+                    className="block px-3 py-3 text-sm font-medium text-navy/70 hover:text-navy hover:bg-navy/5 rounded-lg"
                   >
                     Dashboard
                   </Link>
@@ -259,25 +238,25 @@ export function Navbar(): React.ReactElement | null {
           </nav>
 
           {!isSignedIn && isLoaded && (
-            <div className="p-4 border-t space-y-3">
+            <div className="p-5 border-t border-gray-100 space-y-3">
               <Link href="/sign-in" className="block" onClick={() => setIsMobileMenuOpen(false)}>
-                <Button variant="outline" className="w-full h-11">Sign In</Button>
+                <Button variant="outline" className="w-full h-11 border-navy/20 text-navy">Sign In</Button>
               </Link>
               <Link href="/sign-up" className="block" onClick={() => setIsMobileMenuOpen(false)}>
-                <Button className="w-full h-11">Sign Up</Button>
+                <Button className="w-full h-11 bg-navy text-white hover:bg-navy-light">Sign Up</Button>
               </Link>
             </div>
           )}
 
           {isSignedIn && (
-            <div className="p-4 border-t">
-              <div className="flex items-center gap-3 p-3 bg-accent/50 rounded-lg">
+            <div className="p-5 border-t border-gray-100">
+              <div className="flex items-center gap-3 p-3 bg-cream rounded-lg">
                 <Avatar className="w-8 h-8">
                   <AvatarImage src={user?.image || undefined} alt={userName} />
-                  <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">{userInitial}</AvatarFallback>
+                  <AvatarFallback className="bg-navy/10 text-navy text-xs font-semibold">{userInitial}</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <div className="font-medium text-sm truncate">{userName}</div>
+                  <div className="font-medium text-sm text-navy truncate">{userName}</div>
                   <div className="text-xs text-muted-foreground truncate">{userEmail}</div>
                 </div>
                 <button onClick={handleSignOut} className="text-muted-foreground hover:text-red-600 transition-colors p-1">

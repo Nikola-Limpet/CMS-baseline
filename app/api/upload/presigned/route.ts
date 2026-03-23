@@ -1,6 +1,5 @@
 import { NextRequest } from 'next/server';
-import { headers } from 'next/headers';
-import { auth } from '@/lib/auth';
+import { requireAuth, isAuthError } from '@/lib/auth/require';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import crypto from 'crypto';
@@ -125,8 +124,9 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const session = await auth.api.getSession({ headers: await headers() });
-    const userId = session?.user?.id ?? null;
+    const authResult = await requireAuth();
+    if (isAuthError(authResult)) return authResult;
+    const { userId } = authResult;
 
     const body = await parseJsonBody<Record<string, any>>(request);
     const { filename, contentType, prefix = 'uploads', problemId, type } = body;
@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate S3 key
-    const s3Key = generateS3Key(prefix, filename, userId || undefined);
+    const s3Key = generateS3Key(prefix, filename, userId);
 
     // Create presigned URL
     const command = new PutObjectCommand({
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
       ContentType: contentType,
       ContentLength: undefined, // Let S3 handle this
       Metadata: {
-        userId: userId || 'anonymous',
+        userId,
         problemId: problemId || 'general',
         type: type || 'general',
         originalName: filename,

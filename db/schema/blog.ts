@@ -15,6 +15,12 @@ export const blogPosts = pgTable('blog_posts', {
   publishedAt: timestamp('published_at'),
   scheduledPublishAt: timestamp('scheduled_publish_at'), // For scheduled posts
   userId: varchar('user_id', { length: 255 }).notNull(), // Better Auth user ID of the author
+  // SEO fields
+  metaTitle: varchar('meta_title', { length: 255 }),
+  metaDescription: varchar('meta_description', { length: 500 }),
+  ogImage: varchar('og_image', { length: 500 }),
+  canonicalUrl: varchar('canonical_url', { length: 500 }),
+  noIndex: boolean('no_index').default(false).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({

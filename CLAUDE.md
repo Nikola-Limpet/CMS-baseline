@@ -20,12 +20,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Architecture
 
 ### Tech Stack
-- **Framework**: Next.js 15.3.2 with App Router and TypeScript
+- **Framework**: Next.js 16 with App Router and TypeScript
 - **Styling**: Tailwind CSS with Shadcn UI components
 - **Database**: PostgreSQL with Drizzle ORM
-- **Authentication**: Clerk
+- **Authentication**: Better Auth
 - **Package Manager**: bun
-- **Rich Text**: Lexical editor with KaTeX for mathematical notation
+- **Rich Text**: Tiptab editor with KaTeX for mathematical notation
 - **File Storage**: AWS S3
 
 ### Project Structure
@@ -36,8 +36,6 @@ app/
 ├── (auth)/           - Authentication flows (sign-in, sign-up)
 ├── (blogs)/          - Blog content management
 ├── (Events)/         - Competitions, events, news
-├── (learning)/       - Learning resources
-├── (practice)/       - Practice problems (CIMOC, PHIMO)
 ├── dashboard/        - Admin interface
 └── api/              - API routes
 ```

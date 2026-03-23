@@ -1,6 +1,5 @@
 import { NextRequest } from 'next/server';
-import { headers } from 'next/headers';
-import { auth } from '@/lib/auth';
+import { requireAuth, isAuthError } from '@/lib/auth/require';
 import crypto from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
@@ -154,8 +153,9 @@ function generateSecureFileName(originalName: string, userId?: string): string {
 // Main upload handler
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
-    const userId = session?.user?.id ?? null;
+    const authResult = await requireAuth();
+    if (isAuthError(authResult)) return authResult;
+    const { userId } = authResult;
 
     // Parse form data
     const formData = await request.formData();
@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate secure file name and path
-    const secureFileName = generateSecureFileName(file.name, userId || undefined);
+    const secureFileName = generateSecureFileName(file.name, userId);
     const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'submissions', submissionType, problemId || 'general');
     const filePath = path.join(uploadDir, secureFileName);
 

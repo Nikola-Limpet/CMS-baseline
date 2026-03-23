@@ -8,6 +8,10 @@ import {
   blogTags,
   blogPostCategories,
   blogPostTags,
+  events,
+  eventCategories,
+  eventPostCategories,
+  testimonials,
 } from '../db/schema';
 import { hashPassword } from 'better-auth/crypto';
 import { v4 as uuid } from 'uuid';
@@ -16,6 +20,10 @@ async function seed() {
   console.log('Seeding database...\n');
   // ── Reset Database ───────────────────────────────────────────────────
 
+  await db.delete(testimonials);
+  await db.delete(eventPostCategories);
+  await db.delete(events);
+  await db.delete(eventCategories);
   await db.delete(blogPostTags);
   await db.delete(blogPostCategories);
   await db.delete(blogPosts);
@@ -309,6 +317,204 @@ async function seed() {
   }
 
   console.log(`✓ ${posts.length} blog posts created\n`);
+
+  // ── Event Categories ──────────────────────────────────────────────────
+
+  const eventCatIds = {
+    competition: uuid(),
+    workshop: uuid(),
+    meetup: uuid(),
+  };
+
+  await db.insert(eventCategories).values([
+    { id: eventCatIds.competition, name: 'Competition', slug: 'competition', description: 'Math and science competitions' },
+    { id: eventCatIds.workshop, name: 'Workshop', slug: 'workshop', description: 'Hands-on learning workshops' },
+    { id: eventCatIds.meetup, name: 'Meetup', slug: 'meetup', description: 'Community meetups and socials' },
+  ]).onConflictDoNothing();
+
+  console.log('✓ Event categories created\n');
+
+  // ── Events ────────────────────────────────────────────────────────────
+
+  const daysFromNow = (n: number) => new Date(now.getTime() + n * 86400000);
+
+  const seedEvents = [
+    {
+      id: uuid(),
+      title: 'Spring Math Olympiad 2026',
+      slug: 'spring-math-olympiad-2026',
+      excerpt: 'Test your problem-solving skills in our annual spring math competition. Open to all grade levels.',
+      content: `<h2>About the Olympiad</h2>
+<p>The Spring Math Olympiad is our flagship annual competition, bringing together students from across the region to tackle challenging problems in algebra, geometry, combinatorics, and number theory.</p>
+
+<h2>Format</h2>
+<ul>
+  <li><strong>Individual Round</strong> — 90 minutes, 30 problems of increasing difficulty</li>
+  <li><strong>Team Round</strong> — 45 minutes, 10 problems solved collaboratively in teams of 4</li>
+  <li><strong>Speed Round</strong> — 30 minutes, rapid-fire questions</li>
+</ul>
+
+<h2>Who Can Participate?</h2>
+<p>Students in grades 6–12 are welcome. No prior competition experience is required — this is a great event for first-timers and seasoned competitors alike.</p>
+
+<h2>Prizes</h2>
+<p>Top scorers in each division receive certificates and medals. The winning team receives a trophy and individual prizes.</p>`,
+      coverImage: 'https://images.unsplash.com/photo-1596496050827-8299e0220de1?w=400&q=80',
+      published: true,
+      publishedAt: daysAgo(3),
+      eventDate: daysFromNow(14),
+      eventEndDate: daysFromNow(14),
+      location: 'University Conference Hall, Room 301',
+      registrationUrl: 'https://example.com/register/spring-olympiad',
+      userId: adminId,
+      categories: [eventCatIds.competition],
+    },
+    {
+      id: uuid(),
+      title: 'Introduction to Competitive Programming Workshop',
+      slug: 'intro-competitive-programming-workshop',
+      excerpt: 'Learn the fundamentals of competitive programming — data structures, algorithms, and problem-solving strategies.',
+      content: `<h2>What You'll Learn</h2>
+<p>This workshop covers the essentials every competitive programmer needs:</p>
+<ul>
+  <li>Array and string manipulation techniques</li>
+  <li>Sorting algorithms and when to use them</li>
+  <li>Greedy algorithms and dynamic programming basics</li>
+  <li>Graph traversal (BFS/DFS)</li>
+  <li>Tips for reading competition problems effectively</li>
+</ul>
+
+<h2>Prerequisites</h2>
+<p>You should be comfortable with basic programming in at least one language (Python, C++, or Java). We'll provide practice problems in all three languages.</p>
+
+<h2>What to Bring</h2>
+<p>A laptop with your preferred IDE or editor installed. We'll have Wi-Fi and power outlets available.</p>`,
+      coverImage: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400&q=80',
+      published: true,
+      publishedAt: daysAgo(1),
+      eventDate: daysFromNow(7),
+      eventEndDate: daysFromNow(7),
+      location: 'Online — Zoom',
+      registrationUrl: 'https://example.com/register/cp-workshop',
+      userId: authorId,
+      categories: [eventCatIds.workshop],
+    },
+    {
+      id: uuid(),
+      title: 'Monthly Dev Community Meetup — April',
+      slug: 'dev-community-meetup-april-2026',
+      excerpt: 'Join us for our monthly meetup — lightning talks, networking, and pizza.',
+      content: `<h2>Agenda</h2>
+<ul>
+  <li><strong>6:00 PM</strong> — Doors open, food and drinks</li>
+  <li><strong>6:30 PM</strong> — Lightning talk: "Building a CMS with Next.js" by Jane Author</li>
+  <li><strong>7:00 PM</strong> — Lightning talk: "Auth in 2026 — What's Changed" by Admin</li>
+  <li><strong>7:30 PM</strong> — Open networking and Q&A</li>
+  <li><strong>8:30 PM</strong> — Wrap up</li>
+</ul>
+
+<h2>Lightning Talk Proposals</h2>
+<p>Want to give a 15-minute talk? We're always looking for speakers. Topics can be anything tech-related — a project you built, a tool you love, a lesson you learned.</p>`,
+      coverImage: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&q=80',
+      published: true,
+      publishedAt: daysAgo(5),
+      eventDate: daysFromNow(21),
+      location: 'Tech Hub Co-working Space',
+      userId: adminId,
+      categories: [eventCatIds.meetup],
+    },
+    {
+      id: uuid(),
+      title: 'Winter Problem Solving Contest 2025',
+      slug: 'winter-problem-solving-contest-2025',
+      excerpt: 'Our winter contest featured 120 participants across 3 divisions. Here are the results and standout problems.',
+      content: `<h2>Results</h2>
+<p>Congratulations to all 120 participants across Junior, Intermediate, and Senior divisions!</p>
+
+<h2>Highlights</h2>
+<p>Problem 5 in the Senior division — a combinatorics challenge involving lattice paths — had a solve rate of just 8%. The elegant solution used a bijection to Catalan numbers.</p>
+
+<p>The Junior division saw a record number of perfect scores in the individual round, with 7 students achieving full marks.</p>
+
+<h2>Thank You</h2>
+<p>Thanks to our volunteers, problem setters, and sponsors for making this event possible. See you next winter!</p>`,
+      coverImage: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&q=80',
+      published: true,
+      publishedAt: daysAgo(60),
+      eventDate: daysAgo(45),
+      eventEndDate: daysAgo(44),
+      location: 'City Convention Center',
+      userId: authorId,
+      categories: [eventCatIds.competition],
+    },
+  ];
+
+  for (const event of seedEvents) {
+    const { categories: eventCats, ...eventData } = event;
+
+    await db.insert(events).values(eventData).onConflictDoUpdate({
+      target: events.slug,
+      set: { coverImage: eventData.coverImage, updatedAt: new Date() },
+    });
+
+    if (eventCats.length > 0) {
+      await db.insert(eventPostCategories).values(
+        eventCats.map((categoryId) => ({
+          eventId: event.id,
+          categoryId,
+        }))
+      ).onConflictDoNothing();
+    }
+  }
+
+  console.log(`✓ ${seedEvents.length} events created\n`);
+
+  // ── Testimonials ──────────────────────────────────────────────────────
+
+  await db.insert(testimonials).values([
+    {
+      id: uuid(),
+      authorName: 'Sarah Chen',
+      authorTitle: 'Lead Developer at TechCo',
+      content: 'This CMS is exactly what we needed — fast, clean, and easy to customize. The TipTap editor is a joy to use, and the dashboard gives us full control over our content.',
+      rating: 5,
+      featured: true,
+      published: true,
+      displayOrder: 0,
+    },
+    {
+      id: uuid(),
+      authorName: 'Marcus Rodriguez',
+      authorTitle: 'Freelance Writer',
+      content: 'I have tried dozens of CMS platforms. This one stands out for its simplicity. No bloat, no unnecessary features — just a great writing experience with a beautiful frontend.',
+      rating: 5,
+      featured: true,
+      published: true,
+      displayOrder: 1,
+    },
+    {
+      id: uuid(),
+      authorName: 'Emily Park',
+      authorTitle: 'Founder, DesignStudio',
+      content: 'Open source, self-hosted, and looks great out of the box. We forked it for our agency blog and had it running in production within an afternoon.',
+      rating: 4,
+      featured: true,
+      published: true,
+      displayOrder: 2,
+    },
+    {
+      id: uuid(),
+      authorName: 'David Kim',
+      authorTitle: 'Student',
+      content: 'As a computer science student, this project taught me a lot about Next.js, Drizzle ORM, and building full-stack applications. The code is clean and well-organized.',
+      rating: 5,
+      featured: false,
+      published: true,
+      displayOrder: 3,
+    },
+  ]).onConflictDoNothing();
+
+  console.log('✓ 4 testimonials created\n');
   console.log('Seed complete!');
   process.exit(0);
 }

@@ -1,7 +1,6 @@
 import { type NextRequest } from 'next/server';
-import { headers } from 'next/headers';
-import { auth } from '@/lib/auth';
 import { z } from 'zod';
+import { requireAuth, isAuthError } from '@/lib/auth/require';
 import { db } from '@/db';
 import { blogPosts, blogPostCategories, blogPostTags } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
@@ -21,13 +20,19 @@ const blogPostUpdateSchema = z.object({
   title: z.string().min(3).max(255).optional(),
   content: z.string().min(10).optional(),
   excerpt: z.string().max(500).optional().nullable(),
-  cover_image: z.string().url().optional().nullable().or(z.literal('').transform(() => null)), // Handle empty strings
+  cover_image: z.string().url().optional().nullable().or(z.literal('').transform(() => null)),
   published: z.boolean().optional(),
-  user_id: z.string().optional(), // Note: snake_case, and likely should be derived from auth, not body
+  user_id: z.string().optional(),
   categories: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
-  slug: z.string().optional(), // Added slug as it's often updatable
-  publishedAt: z.date().optional().nullable(), // Added publishedAt
+  slug: z.string().optional(),
+  publishedAt: z.date().optional().nullable(),
+  // SEO fields
+  meta_title: z.string().max(255).optional().nullable().or(z.literal('').transform(() => null)),
+  meta_description: z.string().max(500).optional().nullable().or(z.literal('').transform(() => null)),
+  og_image: z.string().url().optional().nullable().or(z.literal('').transform(() => null)),
+  canonical_url: z.string().url().optional().nullable().or(z.literal('').transform(() => null)),
+  no_index: z.boolean().optional(),
 });
 
 // Get a blog post by ID
@@ -36,12 +41,8 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Check authentication
-    const session = await auth.api.getSession({ headers: await headers() });
-    const userId = session?.user?.id ?? null;
-    if (!userId) {
-      return apiError('Unauthorized', 401);
-    }
+    const authResult = await requireAuth();
+    if (isAuthError(authResult)) return authResult;
 
     const { id } = await context.params;
 
@@ -86,11 +87,8 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
-    const userId = session?.user?.id ?? null;
-    if (!userId) {
-      return apiError('Unauthorized', 401);
-    }
+    const authResult = await requireAuth();
+    if (isAuthError(authResult)) return authResult;
 
     const { id } = await context.params;
 
@@ -124,12 +122,9 @@ export async function PATCH(
 ) {
   const { id } = await context.params;
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
-    const userId = session?.user?.id ?? null;
-
-    if (!userId) {
-      return apiError('Unauthorized', 401);
-    }
+    const authResult = await requireAuth();
+    if (isAuthError(authResult)) return authResult;
+    const { userId } = authResult;
 
     const body = await parseJsonBody<Record<string, any>>(request);
 
@@ -155,12 +150,17 @@ export async function PATCH(
       title: data.title,
       content: data.content,
       excerpt: data.excerpt,
-      coverImage: data.cover_image && data.cover_image.trim() !== '' ? data.cover_image : null, // Handle empty strings
+      coverImage: data.cover_image && data.cover_image.trim() !== '' ? data.cover_image : null,
       published: data.published,
       slug: data.slug || (data.title ? generateSlug(data.title) : existingPost.slug),
       updatedAt: new Date(),
-      // Only set publishedAt if published status is changing from false to true
       publishedAt: data.published && !existingPost.published ? new Date() : existingPost.publishedAt,
+      // SEO fields
+      metaTitle: data.meta_title,
+      metaDescription: data.meta_description,
+      ogImage: data.og_image,
+      canonicalUrl: data.canonical_url,
+      noIndex: data.no_index,
     };
 
 

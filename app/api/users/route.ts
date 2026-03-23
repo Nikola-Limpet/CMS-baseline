@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { db } from '@/db';
 import { user as userTable } from '@/db/schema';
 import { eq, sql } from 'drizzle-orm';
-import { requireAdmin, requireAuth, isAuthError } from '@/lib/api/auth';
+import { requireAdmin, requireAuth, isAuthError } from '@/lib/auth/require';
 import { apiSuccess, apiError, handleApiError, parseJsonBody } from '@/lib/api/response';
 
 // GET handler to fetch all users (Admin only)

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { auth } from '@/lib/auth';
-import { apiError } from './response';
+import { apiError } from '@/lib/api/response';
 
 export interface AuthResult {
   userId: string;

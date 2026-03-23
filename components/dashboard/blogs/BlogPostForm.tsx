@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { blogsApi } from '@/lib/api/blogs';
-import { authClient } from '@/lib/auth-client';
+import { authClient } from '@/lib/auth/client';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -39,7 +39,11 @@ import {
   Plus,
   ImageIcon,
   UploadIcon,
+  ChevronDown,
+  Search,
 } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Switch } from '@/components/ui/switch';
 import { DatePicker } from '@/components/ui/date-picker';
 import { uploadToS3 } from '@/lib/utils/s3-client';
 import Image from 'next/image';
@@ -67,6 +71,12 @@ const blogPostSchema = z.object({
   slug: z.string().optional(),
   scheduledPublishAt: z.union([z.date(), z.null()]).default(null),
   publishNow: z.boolean().default(true),
+  // SEO
+  metaTitle: z.string().max(255).optional().or(z.literal('')),
+  metaDescription: z.string().max(500).optional().or(z.literal('')),
+  ogImage: z.string().url().optional().or(z.literal('')),
+  canonicalUrl: z.string().url().optional().or(z.literal('')),
+  noIndex: z.boolean().default(false),
 });
 
 type BlogPostFormData = z.infer<typeof blogPostSchema>;
@@ -130,6 +140,11 @@ export default function BlogPostForm({
       tagIds: [],
       scheduledPublishAt: null,
       publishNow: true,
+      metaTitle: '',
+      metaDescription: '',
+      ogImage: '',
+      canonicalUrl: '',
+      noIndex: false,
     },
   });
 
@@ -147,6 +162,11 @@ export default function BlogPostForm({
         tagIds: postToEdit.tags?.map(t => t.id) || [],
         scheduledPublishAt: postToEdit.scheduledPublishAt ? new Date(postToEdit.scheduledPublishAt) : null,
         publishNow: !postToEdit.scheduledPublishAt,
+        metaTitle: (postToEdit as any).metaTitle || '',
+        metaDescription: (postToEdit as any).metaDescription || '',
+        ogImage: (postToEdit as any).ogImage || '',
+        canonicalUrl: (postToEdit as any).canonicalUrl || '',
+        noIndex: (postToEdit as any).noIndex ?? false,
       });
     } else {
       form.reset({
@@ -160,6 +180,11 @@ export default function BlogPostForm({
         tagIds: [],
         scheduledPublishAt: null,
         publishNow: true,
+        metaTitle: '',
+        metaDescription: '',
+        ogImage: '',
+        canonicalUrl: '',
+        noIndex: false,
       });
     }
   }, [postToEdit, form]);
@@ -327,6 +352,12 @@ export default function BlogPostForm({
         slug: data.slug || generateUrlSlug(data.title),
         categories: data.categoryIds,
         tags: data.tagIds,
+        // SEO
+        meta_title: data.metaTitle || undefined,
+        meta_description: data.metaDescription || undefined,
+        og_image: data.ogImage || undefined,
+        canonical_url: data.canonicalUrl || undefined,
+        no_index: data.noIndex,
       };
 
       if (postToEdit) {
@@ -730,6 +761,95 @@ export default function BlogPostForm({
                     </FormItem>
                   )}
                 />
+
+                {/* SEO Settings */}
+                <Collapsible>
+                  <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-semibold text-foreground py-2 hover:text-primary transition-colors">
+                    <span className="flex items-center gap-2">
+                      <Search className="h-3.5 w-3.5" />
+                      SEO Settings
+                    </span>
+                    <ChevronDown className="h-4 w-4 transition-transform [[data-state=open]_&]:rotate-180" />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-4 pt-2">
+                    <FormField
+                      control={form.control as any}
+                      name="metaTitle"
+                      render={({ field }) => (
+                        <FormItem>
+                          <label className="text-xs text-muted-foreground">
+                            Meta Title <span className="text-muted-foreground/60">({(field.value || '').length}/60)</span>
+                          </label>
+                          <FormControl>
+                            <Input
+                              placeholder="Override page title for search engines"
+                              {...field}
+                              value={field.value || ''}
+                              className="h-9 text-sm border-border"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control as any}
+                      name="metaDescription"
+                      render={({ field }) => (
+                        <FormItem>
+                          <label className="text-xs text-muted-foreground">
+                            Meta Description <span className="text-muted-foreground/60">({(field.value || '').length}/155)</span>
+                          </label>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Brief description for search results"
+                              className="resize-none min-h-[70px] text-sm border-border"
+                              {...field}
+                              value={field.value || ''}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control as any}
+                      name="canonicalUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <label className="text-xs text-muted-foreground">Canonical URL</label>
+                          <FormControl>
+                            <Input
+                              placeholder="https://..."
+                              {...field}
+                              value={field.value || ''}
+                              className="h-9 text-sm border-border"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control as any}
+                      name="noIndex"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs text-muted-foreground">Hide from search engines</label>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </CollapsibleContent>
+                </Collapsible>
 
                 {/* Author */}
                 {user && (
