@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15 # You can choose a specific PostgreSQL version
+    container_name: smart-edu-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: user # Replace with your desired username
+      POSTGRES_PASSWORD: password # Replace with your desired strong password
+      POSTGRES_DB: smartedudb # Replace with your desired database name
+    ports:
+      - "5432:5432" # Exposes PostgreSQL on port 5432 of your host machine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persists data across container restarts
+
+volumes:
+  postgres_data: # Defines the named volume for data persistence

@@ -1,0 +1,28 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+  "plugins": {
+    "typescript": true,
+    "react": true,
+    "nextjs": true
+  },
+  "rules": {
+    "no-unused-vars": "warn",
+    "no-explicit-any": "warn",
+    "no-unescaped-entities": "warn",
+    "prefer-const": "warn",
+    "no-html-link-for-pages": "error"
+  },
+  "ignorePatterns": [
+    "node_modules",
+    ".next",
+    "out",
+    "build",
+    "*.config.js",
+    "*.config.ts",
+    "*.config.mjs"
+  ]
+}
